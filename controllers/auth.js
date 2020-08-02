@@ -1,50 +1,27 @@
 const { response } = require("express");
-const meli = require('mercadolibre');
-
-const meliObject = new meli.Meli(process.env.CLIENT_ID, process.env.CLIENT_SECRET);
+const axios = require('axios');
+const { meliConfig } = require("../config");
 
 const getAuthURL = (req, res = response) => {
 
-    try {
+    const url = `${meliConfig.auth_url}?response_type=code&client_id=${meliConfig.client_id}&redirect_uri=${meliConfig.redirect_uri}`
 
-        const url = meliObject.getAuthURL(process.env.REDIRECT_URI);
-
-        res.json({
-            ok: true,
-            url
-        });
-        
-    } catch (error) {
-
-        console.log(error);
-        res.status(500).json({
-            ok: false,
-            msg: "Error inesperado"
-        });
-        
-    }
+    res.json({
+        ok: true,
+        url
+    });
 
 }
 
-const getAuthCode = (req, res = response) => {
+const getToken = async(req, res = response) => {
 
-        let code;
-
-        if (req.query.code) {
-            code = req.query.code;
-        } else {
-            return res.redirect("/");
-        }
+        const code = req.body.code;
 
         try {
 
-            meliObject.authorize(code, process.env.REDIRECT_URI, (err, response) => {
-                if(err) {
-                    console.log(err);
-                } else {
-                    res.json(response);
-                }
-            });    
+            const resp = await axios.post(`${meliConfig.oauth_url}?grant_type=authorization_code&client_id=${meliConfig.client_id}&client_secret=${meliConfig.secret_key}&code=${code}&redirect_uri=${meliConfig.redirect_uri}`);
+
+            res.json(resp.data);
 
         } catch (error) {
 
@@ -60,5 +37,5 @@ const getAuthCode = (req, res = response) => {
 
 module.exports = {
     getAuthURL,
-    getAuthCode
+    getToken
 }

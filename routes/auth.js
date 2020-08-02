@@ -1,13 +1,12 @@
 // Ruta: /api/auth
 
 const { Router } = require("express");
-const { getAuthURL, getAuthCode } = require("../controllers/auth");
+const { getAuthURL, getToken } = require("../controllers/auth");
 
 const router = Router();
 
-router.get("/", getAuthCode);
-
 router.get("/url", getAuthURL);
 
+router.post("/token", getToken);
 
 module.exports = router;
